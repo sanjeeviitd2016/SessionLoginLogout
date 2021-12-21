@@ -6,8 +6,6 @@ const employee = require("../models/employee");
 
 
 
-
-
 const addData = async (req, res) => {
   const salt= bcrypt.genSaltSync(10);
   const password= bcrypt.hashSync(req.body.password,salt)
