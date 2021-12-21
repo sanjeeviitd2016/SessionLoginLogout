@@ -1,12 +1,13 @@
-const express= require('express');
-const app= express();
-const port= 8088;
-const router= require('./router')
+const express = require('express');
+const port = 5000;
+const app = express();
+
+require("./config/database")
+
+const router = require("./router");
+app.use("/employee", router);
 
 
-app.use("/employee",router);
-require('./config/database')
-
-app.listen(port,()=>{
-    console.log(`port ${port } is listenening..`)
+app.listen(port, () => {
+    console.log(`port ${port} is listening...`)
 })

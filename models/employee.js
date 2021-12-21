@@ -1,14 +1,12 @@
 const mongoose= require('mongoose');
-
 const schema= new mongoose.Schema({
-
-    //  _id: mongoose.Schema.Types.ObjectId,
-    name:String,
-    email:String,
-    // class: String
-    password: String
+    Name:String,
+    Email:String,
+    Password: String,
+    Adress:String,
+    ContactNo: Number
 })
 
 
-const model= mongoose.model("student",schema);
-module.exports= model;
+const models= mongoose.model("employee",schema);
+module.exports= models;
