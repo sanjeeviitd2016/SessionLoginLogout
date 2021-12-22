@@ -1,12 +1,13 @@
 const mongoose= require('mongoose');
-const schema= new mongoose.Schema({
-    Name:String,
-    Email:String,
-    Password: String,
-    Adress:String,
-    ContactNo: Number
+const employeeSchema= new mongoose.Schema({
+    Name:     {type:String,default:null},
+    Email:    {type:String,default:null, unique:true},
+    Password: {type:String},
+    Address:  {type:String},
+    Contact:  {type:Number},
+    Token:    {type:String}
 })
 
 
-const models= mongoose.model("employee",schema);
+const models= mongoose.model("employees",employeeSchema);
 module.exports= models;

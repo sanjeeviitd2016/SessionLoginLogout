@@ -1,60 +1,79 @@
 
-const bcrypt= require('bcrypt');
-const jwt= require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const employee = require("../models/employee");
 
 
-
-
 const addData = async (req, res) => {
-  const salt= bcrypt.genSaltSync(10);
-  const password= bcrypt.hashSync(req.body.password,salt)
-  const data = new employee(
-    {
-      Name: req.body.name,
-      Email: req.body.email,
-      Password: password,
-      Address: req.body.address,
-      ContactNo: req.body.contact
-    });
+  try {
+    const { Name, Email, Password, Address, Contact } = req.body;
+    if (!(Email && Password && Name && Address && Contact)) {
+      res.status(400).send("All input are required..")
+    }
 
-  data.save( async(err, data) =>
-   { 
-    if(err){
-      throw(err)
+    const OldUser = await employee.findOne({ Email });
+    if (OldUser) {
+      return res.status(409).send("User already exits!");
     }
-    else{
-      var privatekey= "jfhgisihgisehgiwgsrgdfbshjbbjgjgsbjsbbjsbgsjgjgjg";
-      let params= {
-        email: data.Email, name: data.Name
-    }
-    const token=  await jwt.sign(params,privatekey,{expiresIn: '400000s'})
-    console.log(token)
-    res.status(201).json({token:token})
+    const salt = bcrypt.genSaltSync(10);
+    const password = bcrypt.hashSync(Password, salt)
+    const params = { Name, Email }
+    const token = jwt.sign(params, process.env.PRIVATE_KEY, { expiresIn: "2h" });
+    const data = employee.create(
+      {
+        Name,
+        Email,
+        Address,
+        Contact,
+        Password: password,
+        Token: token
+      });
 
-    }
-   });
+    data.save(async (err, data) => {
+      if (err) {
+        cosole.log(err)
+      }
+      res.status(201).json({ Details: data })
+    })
+  }
+  catch (err) {
+    console.log(err)
+  }
 }
 
-const login= async(req,res)=>{
-  var result= await employee.findOne({Email:req.body.email},{});
-  const match= await bcrypt.compare(req.body.password,result.Password)
-  if(match){
-    var privatekey= "jfhgisihgisehgiwgsrgdfbshjbbjgjgsbjsbbjsbgsjgjgjg";
-    const params= {name: result.name, email:result.email}
-    var token = await jwt.sign(params,privatekey,{expiresIn: '100000s'});
-    res.status(200).json({message:"Hello you are logged in..", token:token})
-}
-  else{
-    res.end('Enter correct credentials')
+
+const login = async (req, res) => {
+
+  try {
+    const { Email, Password } = req.body;
+
+    if (!(Email && Password)) {
+      return res.status(400).send("All feilds are required..")
+    }
+    const empdata = await employee.findOne({ Email });
+
+    const match = await bcrypt.compare(Password, empdata.Password);
+    if (empdata && match) {
+      const params = { Email };
+      const token = jwt.sign(params, process.env.PRIVATE_KEY, { expiresIn: "24h" })
+      res.status(200).json({ token: token, data: empdata })
+      empdata.Token = token;
+    }
+
+    else {
+      res.end('Enter correct credentials')
+    }
   }
 
-
+  catch (err) {
+    console.log(err)
+  }
 }
 
 const getData= (req,res)=>{
-  res.end("You can excess")
+  res.send("Hurray Now you can Have the details..")
 }
+
 
 module.exports = {
   login,
