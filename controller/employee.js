@@ -19,7 +19,7 @@ const addData = async (req, res) => {
     const password = bcrypt.hashSync(Password, salt)
     const params = { Name, Email }
     const token = jwt.sign(params, process.env.PRIVATE_KEY, { expiresIn: "2h" });
-    const data = employee.create(
+    const data = new employee(
       {
         Name,
         Email,
@@ -33,7 +33,8 @@ const addData = async (req, res) => {
       if (err) {
         cosole.log(err)
       }
-      res.status(201).json({ Details: data })
+      // res.status(201).json({ Details: data })
+      res.redirect("/employee/login")
     })
   }
   catch (err) {
@@ -50,27 +51,32 @@ const login = async (req, res) => {
     if (!(Email && Password)) {
       return res.status(400).send("All feilds are required..")
     }
-    const empdata = await employee.findOne({ Email });
 
+    const empdata = await employee.findOne({ Email });
     const match = await bcrypt.compare(Password, empdata.Password);
+
     if (empdata && match) {
       const params = { Email };
-      const token = jwt.sign(params, process.env.PRIVATE_KEY, { expiresIn: "24h" })
-      res.status(200).json({ token: token, data: empdata })
-      empdata.Token = token;
+      const token = jwt.sign(params, process.env.PRIVATE_KEY, { expiresIn: "174h" })
+      Session= req.session;
+      Session.userId= empdata.Email;
+      Session.name= empdata.Name;
+      console.log(Session)
+      
+      res.redirect('/employee',)
     }
-
     else {
-      res.end('Enter correct credentials')
+      res.redirect("/employee/login")
     }
   }
-
   catch (err) {
     console.log(err)
   }
 }
 
-const getData= (req,res)=>{
+
+
+const getData = (req, res) => {
   res.send("Hurray Now you can Have the details..")
 }
 
